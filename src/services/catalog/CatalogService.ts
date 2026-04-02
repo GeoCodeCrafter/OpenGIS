@@ -187,3 +187,135 @@ catalogService.registerProvider(makeProvider('esa-copernicus',  'ESA / Copernicu
 catalogService.registerProvider(makeProvider('natural-earth',   'Natural Earth',          'Free vector cultural and physical data at 110m, 50m and 10m scales.',                   naturalEarthDatasets,'vector'));
 catalogService.registerProvider(makeProvider('live-feeds',      'Live Data Feeds',        'Real-time and near-real-time feeds: USGS earthquakes, NASA EONET natural events.',       liveDatasets));
 catalogService.registerProvider(makeProvider('reference-data',  'Reference Datasets',     'Curated open GeoJSON datasets: country boundaries, US states/counties, power plants.', referenceDatasets));
+
+// ---------------------------------------------------------------------------
+// 7. MALTA DATASETS (~25 Malta-specific datasets)
+//    Overpass API GeoJSON queries, Malta Open Data, EU open portals
+// ---------------------------------------------------------------------------
+const MALTA_BBOX = '35.78,14.17,36.10,14.60';
+const OVP = 'https://overpass-api.de/api/interpreter?data=';
+// [out:geojson] is not supported on all server versions — use [out:json].
+// MapViewer's ovpToGeoJSON() converts Overpass JSON elements to a FeatureCollection.
+const enc = (q: string) => OVP + encodeURIComponent(q);
+
+const maltaDatasets: DatasetRecord[] = [
+  // ---- ADMINISTRATIVE ----
+  { id: 'mt-boundary',      name: 'Malta National Boundary',          description: 'Precise Malta & Gozo national boundary polygon from Natural Earth 10m data.',                                                             provider: 'malta', sourceType: 'vector', format: 'GeoJSON', crs: 'EPSG:4326', tags: ['malta', 'boundary', 'administrative'],                        url: 'https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson', metadata: { note: 'Filter for Malta (MLT) from world countries', geometryType: 'MultiPolygon' } },
+  { id: 'mt-localities',    name: 'Malta Localities (Villages & Towns)', description: 'All named populated places in Malta and Gozo from OpenStreetMap.',                                                                       provider: 'malta', sourceType: 'vector', format: 'GeoJSON', crs: 'EPSG:4326', tags: ['malta', 'localities', 'towns', 'villages', 'gozo'],            url: enc(`[out:json][timeout:30][bbox:${MALTA_BBOX}];(node[place~"city|town|village|hamlet"];);out geom;`),             metadata: {} },
+  { id: 'mt-admin-regions', name: 'Malta Administrative Regions',      description: 'Malta NUTS-3 / local council administrative polygons from OSM.',                                                                          provider: 'malta', sourceType: 'vector', format: 'GeoJSON', crs: 'EPSG:4326', tags: ['malta', 'administrative', 'councils', 'regions'],               url: enc(`[out:json][timeout:30][bbox:${MALTA_BBOX}];(relation[admin_level="6"][boundary="administrative"];);out geom;`), metadata: {} },
+  { id: 'mt-coastline',     name: 'Malta Coastline',                   description: 'Detailed Malta & Gozo coastline extracted from OpenStreetMap.',                                                                           provider: 'malta', sourceType: 'vector', format: 'GeoJSON', crs: 'EPSG:4326', tags: ['malta', 'coastline', 'natural'],                                 url: enc(`[out:json][timeout:30][bbox:${MALTA_BBOX}];(way[natural="coastline"];);out geom;`),                            metadata: {} },
+
+  // ---- HERITAGE & CULTURE ----
+  { id: 'mt-heritage-sites',     name: 'Malta Heritage Sites',             description: 'UNESCO and national heritage sites — temples, forts, historic buildings across Malta & Gozo.',                                         provider: 'malta', sourceType: 'vector', format: 'GeoJSON', crs: 'EPSG:4326', tags: ['malta', 'heritage', 'unesco', 'historic', 'culture'],              url: enc(`[out:json][timeout:30][bbox:${MALTA_BBOX}];(node[historic~"monument|memorial|ruins|castle|fort|archaeological_site"];way[historic~"monument|memorial|ruins|castle|fort|archaeological_site"];);out geom;`), metadata: {} },
+  { id: 'mt-prehistoric-temples', name: 'Malta Prehistoric Temples',        description: "Neolithic temples — some of the world's oldest freestanding structures, including Ħaġar Qim and Mnajdra.",                           provider: 'malta', sourceType: 'vector', format: 'GeoJSON', crs: 'EPSG:4326', tags: ['malta', 'temples', 'neolithic', 'prehistoric', 'unesco', 'archaeology'], url: enc(`[out:json][timeout:25][bbox:${MALTA_BBOX}];(node[historic="archaeological_site"];way[historic="archaeological_site"];);out geom;`),  metadata: {} },
+  { id: 'mt-churches',           name: 'Malta Churches & Chapels',         description: 'All churches, cathedrals and chapels across Malta and Gozo — over 360 churches on the island.',                                        provider: 'malta', sourceType: 'vector', format: 'GeoJSON', crs: 'EPSG:4326', tags: ['malta', 'churches', 'religion', 'culture'],                      url: enc(`[out:json][timeout:30][bbox:${MALTA_BBOX}];(node[amenity="place_of_worship"][religion="christian"];way[amenity="place_of_worship"][religion="christian"];);out geom;`), metadata: {} },
+  { id: 'mt-museums',            name: 'Malta Museums & Galleries',        description: 'Museums, galleries and cultural institutions across the Maltese islands.',                                                              provider: 'malta', sourceType: 'vector', format: 'GeoJSON', crs: 'EPSG:4326', tags: ['malta', 'museums', 'galleries', 'culture', 'tourism'],           url: enc(`[out:json][timeout:25][bbox:${MALTA_BBOX}];(node[tourism~"museum|gallery|attraction"];way[tourism~"museum|gallery|attraction"];);out geom;`), metadata: {} },
+  { id: 'mt-forts',              name: 'Malta Fortifications & Bastions',  description: 'Knights of St John fortifications — Valletta bastions, Fort St Angelo, Fort Ricasoli, coastal towers.',                               provider: 'malta', sourceType: 'vector', format: 'GeoJSON', crs: 'EPSG:4326', tags: ['malta', 'fortifications', 'forts', 'bastions', 'knights', 'heritage'], url: enc(`[out:json][timeout:25][bbox:${MALTA_BBOX}];(node[historic~"fort|castle|tower|citadel"];way[historic~"fort|castle|tower|citadel"];relation[historic~"fort|castle|citadel"];);out geom;`), metadata: {} },
+
+  // ---- ENVIRONMENT & NATURAL ----
+  { id: 'mt-natura2000',    name: 'Malta Natura 2000 Sites',       description: 'EU Natura 2000 protected natural areas in Malta — habitats and bird sanctuaries.',                     provider: 'malta', sourceType: 'vector', format: 'GeoJSON', crs: 'EPSG:4326', tags: ['malta', 'natura2000', 'protected-areas', 'environment', 'eu'], url: enc(`[out:json][timeout:30][bbox:${MALTA_BBOX}];(way[boundary="protected_area"];relation[boundary="protected_area"];);out geom;`), metadata: {} },
+  { id: 'mt-beaches',       name: 'Malta Beaches',                 description: 'Sandy and rocky beaches across Malta, Gozo and Comino.',                                               provider: 'malta', sourceType: 'vector', format: 'GeoJSON', crs: 'EPSG:4326', tags: ['malta', 'beaches', 'coastal', 'tourism', 'gozo', 'comino'],     url: enc(`[out:json][timeout:25][bbox:${MALTA_BBOX}];(node[natural="beach"];way[natural="beach"];);out geom;`),         metadata: {} },
+  { id: 'mt-valleys',       name: 'Malta Valleys & Natural Areas', description: 'Valley (widien) systems, garigue and open countryside in Malta and Gozo.',                             provider: 'malta', sourceType: 'vector', format: 'GeoJSON', crs: 'EPSG:4326', tags: ['malta', 'valleys', 'widien', 'nature', 'garigue'],               url: enc(`[out:json][timeout:25][bbox:${MALTA_BBOX}];(way[natural~"valley|wood|scrub|heath"];relation[natural~"valley|wood|scrub"];);out geom;`), metadata: {} },
+  { id: 'mt-land-use',      name: 'Malta Land Use',                description: 'Land use classification across the Maltese islands — residential, agricultural, industrial.',          provider: 'malta', sourceType: 'vector', format: 'GeoJSON', crs: 'EPSG:4326', tags: ['malta', 'land-use', 'urban', 'agriculture'],                    url: enc(`[out:json][timeout:30][bbox:${MALTA_BBOX}];(way[landuse~"residential|farmland|industrial|commercial|farmyard|meadow|cemetery|military"];relation[landuse~"residential|farmland|industrial|commercial"];);out geom;`), metadata: {} },
+
+  // ---- INFRASTRUCTURE & TRANSPORT ----
+  { id: 'mt-roads',         name: 'Malta Road Network',             description: 'Complete road network of Malta and Gozo — highways, arterials, local roads.',                                                           provider: 'malta', sourceType: 'vector', format: 'GeoJSON', crs: 'EPSG:4326', tags: ['malta', 'roads', 'transport', 'highways', 'infrastructure'], url: enc(`[out:json][timeout:30][bbox:${MALTA_BBOX}];(way[highway~"motorway|trunk|primary|secondary|tertiary"];);out geom;`),                                                                metadata: {} },
+  { id: 'mt-bus-stops',     name: 'Malta Bus Stops',                description: 'Public transport bus stop locations across Malta & Gozo (Malta Public Transport network).',                                             provider: 'malta', sourceType: 'vector', format: 'GeoJSON', crs: 'EPSG:4326', tags: ['malta', 'bus', 'transport', 'public-transport'],              url: enc(`[out:json][timeout:25][bbox:${MALTA_BBOX}];(node[highway="bus_stop"];);out geom;`),                                                                                         metadata: {} },
+  { id: 'mt-ferry',         name: 'Malta Ferry Terminals & Quays',  description: 'Ferry terminals, quays and boat landings — including Malta-Gozo and Gozo-Comino routes.',                                                provider: 'malta', sourceType: 'vector', format: 'GeoJSON', crs: 'EPSG:4326', tags: ['malta', 'ferry', 'marine', 'transport', 'gozo', 'comino'],   url: enc(`[out:json][timeout:25][bbox:${MALTA_BBOX}];(node[amenity~"ferry_terminal"];way[man_made~"pier|quay"];node[man_made~"pier|quay"];);out geom;`),                                 metadata: {} },
+  { id: 'mt-airport',       name: 'Malta International Airport',    description: 'Malta International Airport (MLA) terminal, runways and ground infrastructure.',                                                         provider: 'malta', sourceType: 'vector', format: 'GeoJSON', crs: 'EPSG:4326', tags: ['malta', 'airport', 'aviation', 'infrastructure'],              url: enc(`[out:json][timeout:25][bbox:${MALTA_BBOX}];(way[aeroway~"aerodrome|terminal|runway|taxiway|apron"];node[aeroway~"aerodrome|gate"];);out geom;`),                              metadata: {} },
+  { id: 'mt-harbours',      name: 'Malta Marinas & Harbours',       description: 'Grand Harbour, Marsamxett, Marsaxlokk and all marinas and harbours around the islands.',                                                 provider: 'malta', sourceType: 'vector', format: 'GeoJSON', crs: 'EPSG:4326', tags: ['malta', 'harbour', 'marina', 'maritime', 'grand-harbour'],   url: enc(`[out:json][timeout:25][bbox:${MALTA_BBOX}];(way[harbour="yes"];way[leisure="marina"];node[harbour="yes"];node[leisure="marina"];);out geom;`),                                metadata: {} },
+
+  // ---- AMENITIES & SERVICES ----
+  { id: 'mt-hospitals',     name: 'Malta Hospitals & Health Centres', description: 'Hospitals, health centres and clinics — Mater Dei, Gozo General and community facilities.',           provider: 'malta', sourceType: 'vector', format: 'GeoJSON', crs: 'EPSG:4326', tags: ['malta', 'hospitals', 'health', 'emergency'],                   url: enc(`[out:json][timeout:25][bbox:${MALTA_BBOX}];(node[amenity~"hospital|clinic|health_centre|doctors"];way[amenity~"hospital|clinic"];);out geom;`),                               metadata: {} },
+  { id: 'mt-schools',       name: 'Malta Schools & Universities',     description: 'Primary schools, secondary schools, University of Malta and MCAST campuses.',                         provider: 'malta', sourceType: 'vector', format: 'GeoJSON', crs: 'EPSG:4326', tags: ['malta', 'education', 'schools', 'university'],                   url: enc(`[out:json][timeout:25][bbox:${MALTA_BBOX}];(node[amenity~"school|university|college"];way[amenity~"school|university|college"];);out geom;`),                                 metadata: {} },
+  { id: 'mt-dive-sites',    name: 'Malta Dive Sites',                 description: "Scuba dive sites around Malta, Gozo and Comino — wrecks, caves and reefs in the Mediterranean's clearest waters.", provider: 'malta', sourceType: 'vector', format: 'GeoJSON', crs: 'EPSG:4326', tags: ['malta', 'diving', 'scuba', 'wrecks', 'marine', 'gozo', 'comino'], url: enc(`[out:json][timeout:25][bbox:${MALTA_BBOX}];(node[sport~"diving|scuba_diving"];node[leisure="dive_centre"];);out geom;`),                                                       metadata: {} },
+  { id: 'mt-restaurants',   name: 'Malta Restaurants & Bars',        description: 'Restaurants, bars and cafes across Malta and Gozo — from Valletta to the village festas.',          provider: 'malta', sourceType: 'vector', format: 'GeoJSON', crs: 'EPSG:4326', tags: ['malta', 'restaurants', 'bars', 'food', 'tourism'],               url: enc(`[out:json][timeout:25][bbox:${MALTA_BBOX}];(node[amenity~"restaurant|bar|cafe|pub|fast_food"];);out geom;`),                                                                  metadata: {} },
+
+  // ---- BASEMAP TILE LAYERS ----
+  { id: 'mt-osm-basemap',   name: 'Malta OpenStreetMap (Detail)',     description: 'Pre-centred OpenStreetMap view over Malta archipelago at street level.',                             provider: 'malta', sourceType: 'tile',   format: 'XYZ',     crs: 'EPSG:3857', tags: ['malta', 'basemap', 'osm', 'streets'],                          url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',                                                                                                                                    metadata: { centerLon: 14.4, centerLat: 35.92, zoom: 11, attribution: '© OpenStreetMap contributors' } },
+  { id: 'mt-esri-imagery',  name: 'Malta ESRI Satellite Imagery',    description: 'High-resolution satellite imagery of Malta from ESRI — great detail of Valletta and the Three Cities.', provider: 'malta', sourceType: 'tile', format: 'XYZ',   crs: 'EPSG:3857', tags: ['malta', 'satellite', 'imagery', 'esri'],                       url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',                                                                                     metadata: { centerLon: 14.4, centerLat: 35.92, zoom: 13, attribution: '© Esri, Maxar, Earthstar Geographics' } },
+];
+
+catalogService.registerProvider(makeProvider('malta', 'Malta Datasets', 'Comprehensive Malta & Gozo datasets — boundaries, heritage, environment, infrastructure, live feeds.', maltaDatasets));
+
+// ---------------------------------------------------------------------------
+// 8. DIETARY & FREE-FROM MALTA (8 datasets)
+//    Extensive OSM research: 9 GF-tagged restaurants, 47 vegan venues,
+//    Holland & Barrett x3, Naturali Organic, Nature Spice, Nutrition House,
+//    MaltaNutrition.com, 180+ pharmacies, GF supermarket chains.
+// ---------------------------------------------------------------------------
+const dietaryDatasets: DatasetRecord[] = [
+  {
+    id: 'diet-all-gf-df',
+    name: 'All GF & Dairy-Free Friendly Places',
+    description: 'Combined overview: all gluten-free, dairy-free, vegan-only and health-food places in Malta. Your single dietary map layer.',
+    provider: 'dietary', sourceType: 'vector', format: 'GeoJSON', crs: 'EPSG:4326',
+    tags: ['malta', 'dietary', 'gluten-free', 'dairy-free', 'vegan', 'health', 'coeliac'],
+    url: enc(`[out:json][timeout:35][bbox:${MALTA_BBOX}];(node["diet:gluten_free"~"yes|only"];node["diet:dairy_free"~"yes|only"];node["diet:lactose_free"~"yes|only"];node["diet:vegan"="only"];node[shop~"health_food|organic|nutrition_supplements"];way["diet:gluten_free"~"yes|only"];way[shop~"health_food|organic"];);out geom;`),
+    metadata: { note: 'Union of GF + DF + vegan-only + health stores' },
+  },
+  {
+    id: 'diet-gf-restaurants',
+    name: 'Gluten-Free Friendly Restaurants',
+    description: "All OSM-tagged gluten-free restaurants, cafes and eateries in Malta. Confirmed venues: Apple's Eye, Coogi's (x2), Balance Bowl, Pastaus, Ta' Celita, Latini Wine & Dine, The Everest, My Convenience Store.",
+    provider: 'dietary', sourceType: 'vector', format: 'GeoJSON', crs: 'EPSG:4326',
+    tags: ['malta', 'dietary', 'gluten-free', 'coeliac', 'restaurants', 'cafes'],
+    url: enc(`[out:json][timeout:30][bbox:${MALTA_BBOX}];(node["diet:gluten_free"~"yes|only"];way["diet:gluten_free"~"yes|only"];);out geom;`),
+    metadata: {},
+  },
+  {
+    id: 'diet-dairy-free',
+    name: 'Dairy-Free & Lactose-Free Places',
+    description: 'Places in Malta explicitly tagged as dairy-free or lactose-free on OpenStreetMap. Also see the Vegan & Plant-Based layer for vegan-only venues which are inherently dairy-free.',
+    provider: 'dietary', sourceType: 'vector', format: 'GeoJSON', crs: 'EPSG:4326',
+    tags: ['malta', 'dietary', 'dairy-free', 'lactose-free'],
+    url: enc(`[out:json][timeout:30][bbox:${MALTA_BBOX}];(node["diet:dairy_free"~"yes|only"];node["diet:lactose_free"~"yes|only"];way["diet:dairy_free"~"yes|only"];way["diet:lactose_free"~"yes|only"];);out geom;`),
+    metadata: {},
+  },
+  {
+    id: 'diet-vegan',
+    name: 'Vegan & Plant-Based (Dairy-Free)',
+    description: '47+ vegan restaurants, cafes and venues in Malta. Fully plant-based venues are inherently dairy-free. Includes Balance Bowl (vegan-only), and all other vegan-tagged eateries across the islands.',
+    provider: 'dietary', sourceType: 'vector', format: 'GeoJSON', crs: 'EPSG:4326',
+    tags: ['malta', 'dietary', 'vegan', 'plant-based', 'dairy-free'],
+    url: enc(`[out:json][timeout:30][bbox:${MALTA_BBOX}];(node["diet:vegan"~"yes|only"];way["diet:vegan"~"yes|only"];);out geom;`),
+    metadata: {},
+  },
+  {
+    id: 'diet-vegetarian',
+    name: 'Vegetarian-Friendly Places',
+    description: 'Vegetarian-friendly restaurants and cafes across Malta — many also offer separate dairy-free, gluten-free or vegan options. A good starting point for dietary-flexible dining.',
+    provider: 'dietary', sourceType: 'vector', format: 'GeoJSON', crs: 'EPSG:4326',
+    tags: ['malta', 'dietary', 'vegetarian'],
+    url: enc(`[out:json][timeout:30][bbox:${MALTA_BBOX}];(node["diet:vegetarian"~"yes|only"];way["diet:vegetarian"~"yes|only"];);out geom;`),
+    metadata: {},
+  },
+  {
+    id: 'diet-health-stores',
+    name: 'Health Food & Organic Shops',
+    description: 'Health food stores, organic shops and nutrition supplement stores in Malta. Confirmed: Holland & Barrett (3 Malta locations), Naturali Organic, Nature Spice, Nutrition House (2 locations), MaltaNutrition.com.',
+    provider: 'dietary', sourceType: 'vector', format: 'GeoJSON', crs: 'EPSG:4326',
+    tags: ['malta', 'dietary', 'health-food', 'organic', 'supplements', 'holland-barrett'],
+    url: enc(`[out:json][timeout:30][bbox:${MALTA_BBOX}];(node[shop~"health_food|organic|nutrition_supplements|wholefoods|whole_food"];way[shop~"health_food|organic"];);out geom;`),
+    metadata: {},
+  },
+  {
+    id: 'diet-supermarkets-gf',
+    name: 'Supermarkets with Free-From Sections',
+    description: "Malta supermarket chains known to stock dedicated gluten-free and free-from aisles: Welbee's (Malta's largest GF range), Lidl, Greens, Arkadia, SPAR/Eurospar and Smart.",
+    provider: 'dietary', sourceType: 'vector', format: 'GeoJSON', crs: 'EPSG:4326',
+    tags: ['malta', 'dietary', 'supermarkets', 'free-from', 'gluten-free', 'shopping'],
+    url: enc(`[out:json][timeout:30][bbox:${MALTA_BBOX}];(node[shop="supermarket"][name~"Welbee|Lidl|Greens|Arkadia|Spar|Eurospar|Smart",i];way[shop="supermarket"][name~"Welbee|Lidl|Greens|Arkadia|Spar|Eurospar|Smart",i];);out geom;`),
+    metadata: {},
+  },
+  {
+    id: 'diet-pharmacies',
+    name: 'Pharmacies (Specialist Dietary Products)',
+    description: 'All 180+ pharmacies across Malta and Gozo. Most stock gluten-free prescription foods, dairy-free infant formulas, coeliac supplements, lactase enzyme tablets and specialist dietary products.',
+    provider: 'dietary', sourceType: 'vector', format: 'GeoJSON', crs: 'EPSG:4326',
+    tags: ['malta', 'dietary', 'pharmacy', 'supplements', 'coeliac', 'lactase'],
+    url: enc(`[out:json][timeout:30][bbox:${MALTA_BBOX}];(node[amenity="pharmacy"];);out geom;`),
+    metadata: {},
+  },
+];
+catalogService.registerProvider(makeProvider('dietary', '🌿 Gluten-Free & Dairy-Free Malta', 'Comprehensive Malta dietary map — GF restaurants, vegan & plant-based venues, dairy-free places, health food stores, free-from supermarkets and pharmacies. Extensive research across all OSM-tagged dietary places in Malta.', dietaryDatasets));

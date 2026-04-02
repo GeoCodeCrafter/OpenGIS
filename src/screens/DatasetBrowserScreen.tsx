@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Search, Filter, Star, StarOff,
-  Database, Globe, Plus, X,
+  Database, Globe, Plus, X, ChevronLeft,
 } from 'lucide-react';
+import { fromLonLat } from 'ol/proj';
 import { useCatalogStore } from '@/stores/catalogStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { catalogService } from '@/services/catalog/CatalogService';
+import { mapRegistry } from '@/services/map/mapRegistry';
 import type { DatasetRecord } from '@/types/catalog';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -14,7 +16,10 @@ export function DatasetBrowserScreen() {
   const navigate = useNavigate();
   const { datasets, isLoading, filter, search, setFilter, selectedDataset, selectDataset, toggleFavorite, favorites } = useCatalogStore();
   const addLayer = useProjectStore((s) => s.addLayer);
+  const setViewState = useProjectStore((s) => s.setViewState);
   const [searchText, setSearchText] = useState('');
+  // Mobile: track whether to show list or detail view
+  const [showMobileDetail, setShowMobileDetail] = useState(false);
 
   useEffect(() => {
     search();
@@ -42,18 +47,76 @@ export function DatasetBrowserScreen() {
       crs: dataset.crs,
       metadata: dataset.metadata,
     });
+
+    // Determine a center/zoom for this dataset
+    const meta = dataset.metadata as Record<string, unknown>;
+    let center: [number, number] | null = null;
+    let zoom = 10;
+    if (typeof meta.centerLon === 'number' && typeof meta.centerLat === 'number') {
+      center = [meta.centerLon, meta.centerLat];
+      zoom = typeof meta.zoom === 'number' ? meta.zoom : 11;
+    } else if (dataset.tags.includes('malta') || dataset.tags.includes('gozo')) {
+      center = [14.4, 35.92];
+      zoom = 12;
+    }
+
+    if (center) {
+      // Update stored view so MapViewer initialises here if not yet mounted
+      setViewState({ center, zoom, rotation: 0 });
+      // Animate live map immediately if it is already mounted
+      const liveMap = mapRegistry.get();
+      if (liveMap) {
+        liveMap.getView().animate({ center: fromLonLat(center), zoom, duration: 500 });
+      }
+    }
+
     navigate('/map');
+  };
+
+  // On mobile: tap card → show detail overlay
+  const handleSelectDataset = (dataset: DatasetRecord) => {
+    selectDataset(dataset);
+    setShowMobileDetail(true);
   };
 
   const providers = catalogService.getProviders();
   const sourceTypes = ['all', 'raster', 'vector', 'tile', 'service'] as const;
 
   return (
-    <div className="h-full flex">
-      {/* Left panel - filters and results */}
-      <div className="w-96 border-r border-gis-border flex flex-col bg-gis-surface">
+    <div className="h-full flex flex-col sm:flex-row relative overflow-hidden">
+
+      {/* ── MOBILE FULL-SCREEN DETAIL OVERLAY ─────────────────────────────── */}
+      {showMobileDetail && selectedDataset && (
+        <div className="sm:hidden absolute inset-0 z-10 bg-gis-navy flex flex-col">
+          {/* Mobile detail header */}
+          <div className="flex items-center gap-2 px-3 py-3 border-b border-gis-border shrink-0">
+            <button
+              onClick={() => setShowMobileDetail(false)}
+              className="p-2 -ml-1 rounded-lg hover:bg-gis-deep-blue/50 text-white/70 active:bg-gis-deep-blue/70 transition-colors"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <span className="text-sm font-medium text-white/90 truncate flex-1">
+              {selectedDataset.name}
+            </span>
+            <button
+              onClick={() => handleAddToMap(selectedDataset)}
+              className="flex items-center gap-1.5 px-4 py-2 bg-gis-teal/20 text-gis-teal rounded-xl text-sm font-semibold active:bg-gis-teal/40 transition-colors"
+            >
+              <Plus size={15} />
+              Add
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            <DatasetDetail dataset={selectedDataset} onAddToMap={() => handleAddToMap(selectedDataset)} />
+          </div>
+        </div>
+      )}
+
+      {/* ── LEFT PANEL: search + filters + list ───────────────────────────── */}
+      <div className="flex-1 sm:flex-none sm:w-96 border-r border-gis-border flex flex-col bg-gis-surface overflow-hidden">
         {/* Search */}
-        <form onSubmit={handleSearch} className="p-3 border-b border-gis-border">
+        <form onSubmit={handleSearch} className="p-3 border-b border-gis-border shrink-0">
           <div className="relative">
             <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-white/30" />
             <input
@@ -61,13 +124,13 @@ export function DatasetBrowserScreen() {
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               placeholder="Search datasets..."
-              className="w-full bg-gis-navy border border-gis-border rounded-lg pl-8 pr-3 py-1.5 text-sm text-white placeholder:text-white/30 focus:border-gis-teal/50 focus:outline-none transition-colors"
+              className="w-full bg-gis-navy border border-gis-border rounded-lg pl-8 pr-8 py-2 text-sm text-white placeholder:text-white/30 focus:border-gis-teal/50 focus:outline-none transition-colors"
             />
             {searchText && (
               <button
                 type="button"
                 onClick={() => { setSearchText(''); setFilter({ query: '' }); }}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 p-1"
               >
                 <X size={14} />
               </button>
@@ -75,17 +138,17 @@ export function DatasetBrowserScreen() {
           </div>
         </form>
 
-        {/* Filters */}
-        <div className="px-3 py-2 flex items-center gap-1 border-b border-gis-border">
-          <Filter size={12} className="text-white/30" />
+        {/* Source type filters — scrollable row */}
+        <div className="px-3 py-2 flex items-center gap-1 border-b border-gis-border shrink-0 overflow-x-auto">
+          <Filter size={12} className="text-white/30 shrink-0" />
           {sourceTypes.map((type) => (
             <button
               key={type}
               onClick={() => setFilter({ sourceType: type === 'all' ? undefined : type })}
-              className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors shrink-0 ${
                 (type === 'all' && !filter.sourceType) || filter.sourceType === type
                   ? 'bg-gis-teal/20 text-gis-teal-light'
-                  : 'text-white/40 hover:bg-gis-deep-blue/40'
+                  : 'text-white/40 hover:bg-gis-deep-blue/40 active:bg-gis-deep-blue/60'
               }`}
             >
               {type}
@@ -93,13 +156,13 @@ export function DatasetBrowserScreen() {
           ))}
         </div>
 
-        {/* Provider selector */}
-        <div className="px-3 py-2 flex items-center gap-1 border-b border-gis-border text-[10px]">
-          <Globe size={10} className="text-white/30" />
+        {/* Provider selector — scrollable row */}
+        <div className="px-3 py-2 flex items-center gap-1 border-b border-gis-border text-xs shrink-0 overflow-x-auto">
+          <Globe size={10} className="text-white/30 shrink-0" />
           <button
             onClick={() => setFilter({ provider: undefined })}
-            className={`px-1.5 py-0.5 rounded transition-colors ${
-              !filter.provider ? 'bg-gis-teal/20 text-gis-teal-light' : 'text-white/40 hover:text-white/60'
+            className={`px-2 py-1 rounded shrink-0 transition-colors ${
+              !filter.provider ? 'bg-gis-teal/20 text-gis-teal-light' : 'text-white/40 hover:text-white/60 active:text-white/80'
             }`}
           >
             All
@@ -108,8 +171,8 @@ export function DatasetBrowserScreen() {
             <button
               key={p.id}
               onClick={() => setFilter({ provider: p.id })}
-              className={`px-1.5 py-0.5 rounded transition-colors ${
-                filter.provider === p.id ? 'bg-gis-teal/20 text-gis-teal-light' : 'text-white/40 hover:text-white/60'
+              className={`px-2 py-1 rounded shrink-0 transition-colors ${
+                filter.provider === p.id ? 'bg-gis-teal/20 text-gis-teal-light' : 'text-white/40 hover:text-white/60 active:text-white/80'
               }`}
             >
               {p.name}
@@ -117,12 +180,12 @@ export function DatasetBrowserScreen() {
           ))}
         </div>
 
-        {/* Results */}
+        {/* Results list */}
         <div className="flex-1 overflow-y-auto">
           {isLoading ? (
-            <div className="p-4 text-center text-xs text-white/30">Loading datasets...</div>
+            <div className="p-6 text-center text-sm text-white/30">Loading datasets…</div>
           ) : datasets.length === 0 ? (
-            <div className="p-4 text-center text-xs text-white/30">
+            <div className="p-6 text-center text-sm text-white/30">
               No datasets found. Try a different search.
             </div>
           ) : (
@@ -133,7 +196,7 @@ export function DatasetBrowserScreen() {
                   dataset={dataset}
                   isSelected={selectedDataset?.id === dataset.id}
                   isFavorite={favorites.has(dataset.id)}
-                  onSelect={() => selectDataset(dataset)}
+                  onSelect={() => handleSelectDataset(dataset)}
                   onToggleFavorite={() => toggleFavorite(dataset.id)}
                   onAddToMap={() => handleAddToMap(dataset)}
                 />
@@ -142,13 +205,13 @@ export function DatasetBrowserScreen() {
           )}
         </div>
 
-        <div className="p-2 border-t border-gis-border text-[10px] text-white/20 text-center">
-          {datasets.length} datasets from {providers.length} providers
+        <div className="p-2 border-t border-gis-border text-[10px] text-white/20 text-center shrink-0">
+          {datasets.length} datasets · {providers.length} providers
         </div>
       </div>
 
-      {/* Right panel - detail/preview */}
-      <div className="flex-1 flex flex-col">
+      {/* ── RIGHT PANEL: detail (desktop only) ────────────────────────────── */}
+      <div className="hidden sm:flex flex-1 flex-col">
         {selectedDataset ? (
           <DatasetDetail
             dataset={selectedDataset}
@@ -192,17 +255,17 @@ function DatasetCard({
   return (
     <div
       onClick={onSelect}
-      className={`px-3 py-2.5 cursor-pointer transition-colors group ${
+      className={`px-3 py-3 cursor-pointer transition-colors active:bg-gis-deep-blue/40 group ${
         isSelected ? 'bg-gis-teal/10' : 'hover:bg-gis-deep-blue/20'
       }`}
     >
       <div className="flex items-start gap-2">
-        <div className={`mt-0.5 px-1 py-0.5 rounded text-[9px] font-medium ${typeColors[dataset.sourceType] ?? ''}`}>
+        <div className={`mt-0.5 px-1.5 py-0.5 rounded text-[9px] font-medium shrink-0 ${typeColors[dataset.sourceType] ?? ''}`}>
           {dataset.sourceType}
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="text-xs font-medium text-white/90 truncate">{dataset.name}</h3>
-          <p className="text-[10px] text-white/40 mt-0.5 line-clamp-2">{dataset.description}</p>
+          <h3 className="text-sm font-medium text-white/90 truncate">{dataset.name}</h3>
+          <p className="text-xs text-white/40 mt-0.5 line-clamp-2">{dataset.description}</p>
           <div className="flex items-center gap-2 mt-1">
             {dataset.crs && (
               <span className="text-[9px] text-white/25">{dataset.crs}</span>
@@ -210,19 +273,20 @@ function DatasetCard({
             <span className="text-[9px] text-white/25">{dataset.format}</span>
           </div>
         </div>
-        <div className="flex flex-col gap-1 items-center">
+        <div className="flex flex-col gap-1 items-center shrink-0">
           <button
             onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
-            className="p-0.5 text-white/20 hover:text-amber-400 transition-colors"
+            className="p-1.5 text-white/30 hover:text-amber-400 active:text-amber-400 transition-colors"
           >
-            {isFavorite ? <Star size={12} className="text-amber-400 fill-amber-400" /> : <StarOff size={12} />}
+            {isFavorite ? <Star size={14} className="text-amber-400 fill-amber-400" /> : <StarOff size={14} />}
           </button>
+          {/* Always visible on mobile, hover on desktop */}
           <button
             onClick={(e) => { e.stopPropagation(); onAddToMap(); }}
-            className="p-0.5 text-white/20 hover:text-gis-teal transition-colors opacity-0 group-hover:opacity-100"
+            className="p-1.5 text-gis-teal/70 hover:text-gis-teal active:text-gis-teal transition-colors sm:opacity-0 sm:group-hover:opacity-100"
             title="Add to map"
           >
-            <Plus size={12} />
+            <Plus size={14} />
           </button>
         </div>
       </div>

@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Home, Map, Upload, Database, Layers, Settings,
-  Sun, Moon, ChevronLeft,
+  Sun, Moon, ChevronLeft, X,
 } from 'lucide-react';
 import { useAppStore } from '@/stores/appStore';
 import { useProjectStore } from '@/stores/projectStore';
@@ -53,14 +53,14 @@ export function Header() {
           <button
             key={path}
             onClick={() => navigate(path)}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 sm:py-1 rounded text-xs font-medium transition-colors ${
               location.pathname === path
                 ? 'bg-gis-teal/20 text-gis-teal-light'
                 : 'text-white/60 hover:bg-gis-deep-blue/40 hover:text-white/90'
             }`}
           >
             <Icon size={14} />
-            {label}
+            <span className="hidden sm:inline">{label}</span>
           </button>
         ))}
       </nav>
@@ -68,9 +68,9 @@ export function Header() {
       {/* Spacer */}
       <div className="flex-1" />
 
-      {/* Project name */}
+      {/* Project name — hidden on small screens */}
       {project && (
-        <span className="text-xs text-white/40 px-2 truncate max-w-[200px]"
+        <span className="hidden sm:block text-xs text-white/40 px-2 truncate max-w-[160px]"
           style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
         >
           {project.meta.name}
@@ -83,12 +83,12 @@ export function Header() {
       >
         <button
           onClick={() => setSidebarPanel(sidebarPanel === 'layers' ? null : 'layers')}
-          className={`p-1.5 rounded transition-colors ${
-            sidebarPanel === 'layers' ? 'bg-gis-teal/20 text-gis-teal-light' : 'text-white/50 hover:bg-gis-deep-blue/40'
+          className={`p-1.5 rounded transition-colors flex items-center gap-1 ${
+            sidebarPanel === 'layers' ? 'bg-gis-teal/30 text-gis-teal-light' : 'text-white/50 hover:bg-gis-deep-blue/40'
           }`}
-          title="Layers"
+          title={sidebarPanel === 'layers' ? 'Close layers' : 'Layers'}
         >
-          <Layers size={14} />
+          {sidebarPanel === 'layers' ? <X size={14} /> : <Layers size={14} />}
         </button>
         <button
           onClick={() => setSidebarPanel(sidebarPanel === 'catalog' ? null : 'catalog')}

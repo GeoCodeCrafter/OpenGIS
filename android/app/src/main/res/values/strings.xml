@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">OpenGIS</string>
+    <string name="title_activity_main">OpenGIS</string>
+    <string name="package_name">com.opengis.app</string>
+    <string name="custom_url_scheme">com.opengis.app</string>
+</resources>

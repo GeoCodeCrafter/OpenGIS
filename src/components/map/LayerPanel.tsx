@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import {
   Eye, EyeOff, GripVertical, Trash2,
-  ChevronDown, ChevronRight, ZoomIn, Copy,
+  ChevronDown, ChevronRight, ZoomIn, Copy, MoreVertical,
 } from 'lucide-react';
 import { transformExtent } from 'ol/proj';
 import VectorSource from 'ol/source/Vector';
 import OlVectorLayer from 'ol/layer/Vector';
 import { useProjectStore } from '@/stores/projectStore';
 import { mapRegistry } from '@/services/map/mapRegistry';
+import { LAYER_LEGEND, DIETARY_LAYER_IDS } from './featureIcons';
 import type { Layer } from '@/types/layers';
 
 interface ContextMenuState {
@@ -41,6 +42,7 @@ export function LayerPanel() {
 
   const handleContextMenu = (e: React.MouseEvent, _layer: Layer) => {
     e.preventDefault();
+    e.stopPropagation();
     setContextMenu({ x: e.clientX, y: e.clientY, layerId: _layer.id });
   };
 
@@ -67,20 +69,23 @@ export function LayerPanel() {
     if (olLayer instanceof OlVectorLayer) {
       const source = olLayer.getSource() as VectorSource;
       if (source) {
-        // Wait for features to be loaded if needed
+        // Features load asynchronously via fetch – try immediately, wait if not ready
         const tryFit = () => {
           const ext = source.getExtent();
           if (ext && ext[0] !== Infinity) {
             map.getView().fit(ext, { duration: 600, padding: [40, 40, 40, 40] });
           } else {
-            map.getView().fit(worldExtent, { duration: 600 });
+            source.once('change', () => {
+              const ext2 = source.getExtent();
+              if (ext2 && ext2[0] !== Infinity) {
+                map.getView().fit(ext2, { duration: 600, padding: [40, 40, 40, 40] });
+              } else {
+                map.getView().fit(worldExtent, { duration: 600 });
+              }
+            });
           }
         };
-        if (source.getState() === 'ready') {
-          tryFit();
-        } else {
-          source.once('change', tryFit);
-        }
+        tryFit();
         closeMenu();
         return;
       }
@@ -138,7 +143,10 @@ export function LayerPanel() {
         <div
           ref={menuRef}
           className="fixed z-50 min-w-[160px] bg-gis-surface border border-gis-border rounded-lg shadow-xl py-1 text-sm"
-          style={{ left: contextMenu.x, top: contextMenu.y }}
+          style={{
+            left: Math.min(contextMenu.x, window.innerWidth - 175),
+            top: Math.min(contextMenu.y, window.innerHeight - 160),
+          }}
         >
           <button
             onClick={() => handleZoomToExtent(contextMenu.layerId)}
@@ -209,24 +217,24 @@ function LayerItem({
       onDragEnd={onDragEnd}
       onContextMenu={onContextMenu}
     >
-      <div className="group flex items-center gap-1 px-2 py-1.5 hover:bg-gis-deep-blue/20 transition-colors">
-        <div className="cursor-grab text-white/20 hover:text-white/40">
+      <div className="group flex items-center gap-1 px-2 py-2 hover:bg-gis-deep-blue/20 transition-colors">
+        <div className="cursor-grab text-white/20 hover:text-white/40 hidden sm:block">
           <GripVertical size={12} />
         </div>
 
-        <button onClick={onToggleExpand} className="p-0.5 text-white/40">
+        <button onClick={onToggleExpand} className="p-1 text-white/40">
           {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
         </button>
 
         <button
           onClick={onToggleVisibility}
-          className="p-0.5 text-white/50 hover:text-white/80 transition-colors"
+          className="p-1 text-white/50 hover:text-white/80 active:text-white/80 transition-colors"
           title={layer.visible ? 'Hide layer' : 'Show layer'}
         >
-          {layer.visible ? <Eye size={13} /> : <EyeOff size={13} />}
+          {layer.visible ? <Eye size={14} /> : <EyeOff size={14} />}
         </button>
 
-        <span className={`text-[10px] px-1 py-0.5 rounded ${typeColors[layer.type] ?? 'bg-gray-500/20 text-gray-400'}`}>
+        <span className={`text-[10px] px-1 py-0.5 rounded shrink-0 ${typeColors[layer.type] ?? 'bg-gray-500/20 text-gray-400'}`}>
           {layer.type}
         </span>
 
@@ -234,9 +242,19 @@ function LayerItem({
           {layer.name}
         </span>
 
+        {/* More button — always visible on mobile, hover-only on desktop */}
+        <button
+          onClick={onContextMenu}
+          className="p-1.5 text-white/30 hover:text-white/70 active:text-white/70 transition-colors sm:opacity-0 sm:group-hover:opacity-100"
+          title="Layer options"
+        >
+          <MoreVertical size={13} />
+        </button>
+
+        {/* Remove button — always visible on mobile, hover-only on desktop */}
         <button
           onClick={onRemove}
-          className="p-0.5 text-white/20 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+          className="p-1.5 text-white/25 hover:text-red-400 active:text-red-400 transition-colors sm:opacity-0 sm:group-hover:opacity-100"
           title="Remove layer"
         >
           <Trash2 size={12} />
@@ -254,7 +272,7 @@ function LayerItem({
               step={0.05}
               value={layer.opacity}
               onChange={(e) => onOpacityChange(parseFloat(e.target.value))}
-              className="flex-1 h-1 accent-gis-teal"
+              className="flex-1 h-2 accent-gis-teal"
             />
             <span className="text-[10px] text-white/40 w-8 text-right">
               {Math.round(layer.opacity * 100)}%
@@ -263,6 +281,41 @@ function LayerItem({
           {layer.crs && (
             <div className="text-[10px] text-white/30">
               CRS: {layer.crs}
+            </div>
+          )}
+          {/* Legend */}
+          {LAYER_LEGEND[layer.id] && (
+            <div className="pt-1">
+              <div className="text-[10px] text-white/30 mb-1.5">Legend</div>
+              <div className="space-y-1">
+                {LAYER_LEGEND[layer.id].map((item) => (
+                  <div key={item.label} className="flex items-center gap-2">
+                    <div
+                      className="w-5 h-5 rounded-full shrink-0 flex items-center justify-center text-white"
+                      style={{ backgroundColor: item.color, fontSize: 9, fontWeight: 700, lineHeight: 1 }}
+                    >
+                      {item.char}
+                    </div>
+                    <span className="text-[10px] text-white/60">{item.label}</span>
+                  </div>
+                ))}
+              </div>
+              {DIETARY_LAYER_IDS.has(layer.id) && (
+                <div className="mt-2 pt-2 border-t border-white/10">
+                  <div className="text-[10px] text-white/30 mb-1.5">Dietary info in popup</div>
+                  <div className="flex flex-wrap gap-1">
+                    {['Vegan', 'Vegetarian', 'Gluten-free', 'Halal', 'Kosher'].map((d) => (
+                      <span
+                        key={d}
+                        className="text-[9px] bg-teal-900/40 text-teal-400 border border-teal-700/40 rounded-full px-1.5 py-0.5"
+                      >
+                        {d}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div className="text-[9px] text-white/20 mt-2">Tap any feature on the map for details</div>
             </div>
           )}
         </div>

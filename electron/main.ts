@@ -39,7 +39,7 @@ app.whenReady().then(() => {
   // Inject Referer + User-Agent for map tile servers that require them (e.g. OSM).
   // Without a Referer, OSM and several other volunteer tile CDNs return HTTP 403.
   session.defaultSession.webRequest.onBeforeSendHeaders(
-    { urls: ['https://*'] },
+    { urls: ['https://*/*', 'http://*/*'] },
     (details, callback) => {
       const headers = { ...details.requestHeaders };
       // Only patch tile-like image requests that lack a Referer

@@ -78,6 +78,11 @@ html, body, #root {
   background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981);
 }
 
+/* Ensure OL map receives all touch events */
+.ol-viewport {
+  touch-action: none;
+}
+
 /* Draggable layer */
 .layer-dragging {
   opacity: 0.5;

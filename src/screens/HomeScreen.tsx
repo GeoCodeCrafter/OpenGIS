@@ -28,14 +28,15 @@ export function HomeScreen() {
   };
 
   return (
-    <div className="h-full bg-gis-navy flex flex-col items-center justify-center p-8 overflow-y-auto">
-      <div className="max-w-3xl w-full space-y-10">
+    <div className="h-full bg-gis-navy flex flex-col items-center justify-center p-4 sm:p-8 overflow-y-auto">
+      <div className="max-w-3xl w-full space-y-6 sm:space-y-10">
         {/* Logo and title */}
-        <div className="text-center space-y-3">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-gis-teal to-gis-green shadow-lg shadow-gis-teal/20">
-            <Map size={40} className="text-white" />
+        <div className="text-center space-y-2 sm:space-y-3">
+          <div className="inline-flex items-center justify-center w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-gis-teal to-gis-green shadow-lg shadow-gis-teal/20">
+            <Map size={28} className="sm:hidden text-white" />
+            <Map size={40} className="hidden sm:block text-white" />
           </div>
-          <h1 className="text-4xl font-bold tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
             <span className="text-white">Open</span>
             <span className="text-gis-teal-light">GIS</span>
           </h1>
@@ -155,7 +156,7 @@ function ActionCard({
   return (
     <button
       onClick={onClick}
-      className={`flex flex-col items-center gap-2 p-5 rounded-xl border transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${
+      className={`flex flex-col items-center gap-2 p-3 sm:p-5 rounded-xl border transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${
         highlight
           ? 'bg-gis-teal/10 border-gis-teal/30 hover:bg-gis-teal/20 hover:border-gis-teal/50'
           : accent

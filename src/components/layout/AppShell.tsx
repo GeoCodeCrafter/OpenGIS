@@ -11,7 +11,16 @@ export function AppShell({ children }: AppShellProps) {
   const isHome = location.pathname === '/';
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-gis-navy text-white overflow-hidden">
+    <div
+      className="w-screen flex flex-col bg-gis-navy text-white overflow-hidden"
+      style={{
+        height: '100vh',
+        paddingTop: 'env(safe-area-inset-top)',
+        paddingBottom: 'env(safe-area-inset-bottom)',
+        paddingLeft: 'env(safe-area-inset-left)',
+        paddingRight: 'env(safe-area-inset-right)',
+      }}
+    >
       {!isHome && <Header />}
       <main className="flex-1 overflow-hidden">
         {children}

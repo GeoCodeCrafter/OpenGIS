@@ -107,10 +107,14 @@ export const useProjectStore = create<ProjectState>((set) => ({
   reorderLayers: (fromIndex, toIndex) =>
     set((state) => {
       if (!state.project) return state;
-      const layers = [...state.project.layers];
-      const [moved] = layers.splice(fromIndex, 1);
-      layers.splice(toIndex, 0, moved);
-      const reindexed = layers.map((l, i) => ({ ...l, zIndex: i })) as Layer[];
+      // Sort descending by zIndex first — this matches the panel's display order.
+      // Without sorting, splice indices are into the raw store array, not the panel order.
+      const sorted = [...state.project.layers].sort((a, b) => b.zIndex - a.zIndex);
+      const [moved] = sorted.splice(fromIndex, 1);
+      sorted.splice(toIndex, 0, moved);
+      // Panel top (index 0) = highest zIndex = renders on top in OL
+      const n = sorted.length;
+      const reindexed = sorted.map((l, i) => ({ ...l, zIndex: n - 1 - i })) as Layer[];
       return {
         project: { ...state.project, layers: reindexed },
         isDirty: true,
