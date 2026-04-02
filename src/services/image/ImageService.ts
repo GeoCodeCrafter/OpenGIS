@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import type { ImportedImage, ImageMetadata, DetectionResult, DetectedClue, CandidateControlPoint } from '@/types/detection';
+import type { ImportedImage, ImageMetadata } from '@/types/detection';
 
 export async function importImage(file: File): Promise<ImportedImage> {
   const metadata = await extractImageMetadata(file);

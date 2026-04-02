@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import {
   Layers, Eye, EyeOff, SlidersHorizontal, Crosshair,
-  Check, X, ZoomIn, ZoomOut, AlertTriangle,
+  Check, ZoomIn, ZoomOut, AlertTriangle,
 } from 'lucide-react';
 import { useGeorefStore } from '@/stores/georefStore';
 import { candidatesToControlPoints, computeGeorefSolution } from '@/services/georef/GeorefEngine';
@@ -299,7 +299,7 @@ export function AlignStep() {
           {solution && (
             <div className="p-3 rounded-lg bg-gis-deep-blue/30 border border-gis-border space-y-2">
               <span className="text-[10px] text-white/40 uppercase tracking-wider">Solution</span>
-              <ConfidenceMeter confidence={solution.confidence} />
+              <ConfidenceMeter value={solution.confidence} />
               <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[10px]">
                 <span className="text-white/30">RMSE</span>
                 <span className="text-white/70 font-mono">{solution.metrics.rmse.toFixed(4)}</span>

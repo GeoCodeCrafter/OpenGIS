@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
-  Eye, EyeOff, GripVertical, Trash2, ZoomIn,
-  MoreHorizontal, ChevronDown, ChevronRight,
+  Eye, EyeOff, GripVertical, Trash2,
+  ChevronDown, ChevronRight,
 } from 'lucide-react';
 import { useProjectStore } from '@/stores/projectStore';
 import type { Layer } from '@/types/layers';

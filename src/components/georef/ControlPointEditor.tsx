@@ -1,4 +1,4 @@
-import { Lock, Unlock, Trash2, Check, X, GripVertical } from 'lucide-react';
+import { Lock, Unlock, Trash2, Check, GripVertical } from 'lucide-react';
 import type { ControlPoint } from '@/types/georef';
 
 interface ControlPointEditorProps {

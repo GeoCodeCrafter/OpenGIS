@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { Upload, FileImage, Image, AlertCircle } from 'lucide-react';
+import { Upload, FileImage, AlertCircle } from 'lucide-react';
 import { useGeorefStore } from '@/stores/georefStore';
 import { importImage, importImageFromPath } from '@/services/image/ImageService';
 

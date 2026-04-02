@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import type { DetectedClue, CandidateControlPoint, DetectionResult, ClueType } from '@/types/detection';
+import type { DetectedClue, CandidateControlPoint, DetectionResult } from '@/types/detection';
 
 // --- Coordinate pattern regexes ---
 

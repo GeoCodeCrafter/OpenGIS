@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import {
-  Play, Loader2, CheckCircle2, AlertTriangle,
+  Play, Loader2, AlertTriangle,
   ScanSearch, Tag, MapPin, Info,
 } from 'lucide-react';
 import { useGeorefStore } from '@/stores/georefStore';

@@ -262,7 +262,6 @@ class CRSService {
   /** Generate UTM zone codes for a given latitude/longitude */
   suggestUTMZone(lon: number, lat: number): string {
     const zone = Math.floor((lon + 180) / 6) + 1;
-    const hemisphere = lat >= 0 ? 'N' : 'S';
     const epsgBase = lat >= 0 ? 32600 : 32700;
     return `EPSG:${epsgBase + zone}`;
   }

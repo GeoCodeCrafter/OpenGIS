@@ -26,7 +26,9 @@ export interface PluginConfigField {
   required?: boolean;
 }
 
-export interface PluginHook<TInput = unknown, TOutput = unknown> {
+export type PluginHook = string;
+
+export interface PluginHookDef<TInput = unknown, TOutput = unknown> {
   id: string;
   pluginId: string;
   execute(input: TInput): Promise<TOutput>;

@@ -16,7 +16,6 @@ export function computeAffineTransform(
 
   // Least-squares solution for 6 affine parameters
   // Ax = b where A is from image coords, b is map coords
-  const n = pts.length;
   const A: number[][] = [];
   const bx: number[] = [];
   const by: number[] = [];
@@ -54,7 +53,6 @@ export function computeProjectiveTransform(
   if (pts.length < 4) return null;
 
   // Solve the 8-parameter projective transform using DLT
-  const n = pts.length;
   const A: number[][] = [];
   const b: number[] = [];
 

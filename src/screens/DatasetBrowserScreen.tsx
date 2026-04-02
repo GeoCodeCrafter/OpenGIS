@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Search, Filter, Star, StarOff, MapPin, Layers as LayersIcon,
-  Database, Globe, ChevronRight, Plus, X,
+  Search, Filter, Star, StarOff,
+  Database, Globe, Plus, X,
 } from 'lucide-react';
 import { useCatalogStore } from '@/stores/catalogStore';
 import { useProjectStore } from '@/stores/projectStore';

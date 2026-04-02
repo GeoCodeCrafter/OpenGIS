@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import {
-  Download, FileImage, FileText, FileSpreadsheet, File,
+  Download, FileImage, FileText, FileSpreadsheet,
   Folder, Check, AlertTriangle, Loader2, ExternalLink,
 } from 'lucide-react';
 import { useGeorefStore } from '@/stores/georefStore';
@@ -76,11 +76,10 @@ export function ExportStep() {
 
   const handleSelectFolder = async () => {
     if (window.electronAPI) {
-      const result = await window.electronAPI.showSaveDialog({
-        title: 'Select export location',
-        defaultPath: image?.fileName?.replace(/\.[^.]+$/, '_georef') ?? 'georef_output',
-        filters: [{ name: 'All Files', extensions: ['*'] }],
-      });
+      const result = await window.electronAPI.saveFile(
+        image?.fileName?.replace(/\.[^.]+$/, '_georef') ?? 'georef_output',
+        [{ name: 'All Files', extensions: ['*'] }],
+      );
       if (result) setOutputDir(result);
     }
   };
@@ -243,7 +242,7 @@ export function ExportStep() {
           {solution && (
             <div className="p-2.5 rounded-lg bg-gis-deep-blue/30 border border-gis-border space-y-2">
               <span className="text-[10px] text-white/30 uppercase tracking-wider">Solution</span>
-              <ConfidenceMeter confidence={solution.confidence} />
+              <ConfidenceMeter value={solution.confidence} />
               <div className="space-y-1 text-[10px]">
                 <div className="flex justify-between">
                   <span className="text-white/30">CRS</span>

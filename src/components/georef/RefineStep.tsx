@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import {
   Plus, Trash2, Undo2, Redo2, Settings2, AlertTriangle,
-  Lock, Unlock, Check, X, BarChart3, ArrowUpDown,
+  BarChart3,
 } from 'lucide-react';
 import { useGeorefStore } from '@/stores/georefStore';
 import { computeGeorefSolution } from '@/services/georef/GeorefEngine';
@@ -197,7 +197,7 @@ export function RefineStep() {
 
             {solution ? (
               <>
-                <ConfidenceMeter confidence={solution.confidence} />
+                <ConfidenceMeter value={solution.confidence} />
 
                 <div className="space-y-2">
                   <MetricRow label="RMSE" value={solution.metrics.rmse.toFixed(4)} />
