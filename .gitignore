@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build
+dist/
+dist-electron/
+out/
+build/
+*.tsbuildinfo
+
+# IDE
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test
+coverage/
+test-results/
+playwright-report/
+
+# Electron
+release/
+
+# Temp
+*.tmp
+.cache/

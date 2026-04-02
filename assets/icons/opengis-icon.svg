@@ -1,0 +1,38 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" rx="96" fill="#0f172a"/>
+
+  <!-- Map document shape -->
+  <rect x="96" y="72" width="320" height="368" rx="16" fill="#1e3a5f" stroke="#1e5f8a" stroke-width="2"/>
+
+  <!-- Grid lines - horizontal -->
+  <line x1="96" y1="172" x2="416" y2="172" stroke="#0d9488" stroke-width="1.5" opacity="0.25"/>
+  <line x1="96" y1="256" x2="416" y2="256" stroke="#0d9488" stroke-width="1.5" opacity="0.25"/>
+  <line x1="96" y1="340" x2="416" y2="340" stroke="#0d9488" stroke-width="1.5" opacity="0.25"/>
+
+  <!-- Grid lines - vertical -->
+  <line x1="200" y1="72" x2="200" y2="440" stroke="#0d9488" stroke-width="1.5" opacity="0.25"/>
+  <line x1="312" y1="72" x2="312" y2="440" stroke="#0d9488" stroke-width="1.5" opacity="0.25"/>
+
+  <!-- Crosshair target (georeferencing symbol) -->
+  <circle cx="256" cy="256" r="56" fill="none" stroke="#10b981" stroke-width="3.5"/>
+  <circle cx="256" cy="256" r="6" fill="#10b981"/>
+  <!-- Crosshair lines with gaps -->
+  <line x1="256" y1="188" x2="256" y2="232" stroke="#10b981" stroke-width="3" stroke-linecap="round"/>
+  <line x1="256" y1="280" x2="256" y2="324" stroke="#10b981" stroke-width="3" stroke-linecap="round"/>
+  <line x1="188" y1="256" x2="232" y2="256" stroke="#10b981" stroke-width="3" stroke-linecap="round"/>
+  <line x1="280" y1="256" x2="324" y2="256" stroke="#10b981" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Auto-detection corner brackets -->
+  <path d="M204 204 L204 220 L220 220" fill="none" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+  <path d="M308 204 L308 220 L292 220" fill="none" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+  <path d="M204 308 L204 292 L220 292" fill="none" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+  <path d="M308 308 L308 292 L292 292" fill="none" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+
+  <!-- Sparkle / magic auto indicator -->
+  <circle cx="380" cy="108" r="4" fill="#fbbf24"/>
+  <line x1="380" y1="96" x2="380" y2="120" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+  <line x1="368" y1="108" x2="392" y2="108" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+  <circle cx="404" cy="88" r="2.5" fill="#fbbf24" opacity="0.5"/>
+  <circle cx="360" cy="88" r="2" fill="#fbbf24" opacity="0.4"/>
+</svg>

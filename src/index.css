@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-gis-deep-blue: #1e3a5f;
+  --color-gis-navy: #0f172a;
+  --color-gis-teal: #0d9488;
+  --color-gis-green: #10b981;
+  --color-gis-surface: #162032;
+  --color-gis-border: #1e3a5f;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e3a5f;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #0d9488;
+}
+
+/* OpenLayers overrides */
+.ol-control {
+  background-color: rgba(15, 23, 42, 0.8) !important;
+  border-radius: 4px !important;
+  padding: 2px !important;
+}
+
+.ol-control button {
+  background-color: rgba(30, 58, 95, 0.9) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 4px !important;
+  font-size: 14px !important;
+  width: 28px !important;
+  height: 28px !important;
+}
+
+.ol-control button:hover {
+  background-color: rgba(13, 148, 136, 0.8) !important;
+}
+
+.ol-attribution {
+  font-size: 10px !important;
+}
+
+/* Drag-and-drop zone */
+.drop-zone-active {
+  border-color: var(--color-gis-teal);
+  background-color: rgba(13, 148, 136, 0.1);
+}
+
+/* Confidence meter gradient */
+.confidence-bar {
+  background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981);
+}
+
+/* Draggable layer */
+.layer-dragging {
+  opacity: 0.5;
+  outline: 2px solid var(--color-gis-teal);
+}
