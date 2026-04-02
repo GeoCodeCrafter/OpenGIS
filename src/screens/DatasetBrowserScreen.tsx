@@ -18,7 +18,7 @@ export function DatasetBrowserScreen() {
 
   useEffect(() => {
     search();
-  }, []);
+  }, [search]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
