@@ -28,11 +28,13 @@ export function MapScreen() {
       )}
 
       {/* Map */}
-      <div className="flex-1 relative">
-        <MapViewer onCoordinateChange={handleCoordinateChange} />
+      <div className="flex-1 flex flex-col min-h-0">
+        <div className="flex-1 relative min-h-0">
+          <MapViewer onCoordinateChange={handleCoordinateChange} />
+        </div>
 
-        {/* Status bar */}
-        <div className="absolute bottom-0 left-0 right-0 h-6 bg-gis-surface/90 backdrop-blur-sm border-t border-gis-border flex items-center px-3 gap-4 text-[10px] text-white/50">
+        {/* Status bar — outside MapViewer so OL controls are not clipped */}
+        <div className="h-6 shrink-0 bg-gis-surface/95 border-t border-gis-border flex items-center px-3 gap-4 text-[10px] text-white/50">
           <div className="flex items-center gap-1">
             <Crosshair size={10} />
             <span className="font-mono">
