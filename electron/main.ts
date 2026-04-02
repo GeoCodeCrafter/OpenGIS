@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, shell, session } from 'electron';
 import { join } from 'path';
 import { readFile, writeFile } from 'fs/promises';
 
@@ -35,7 +35,26 @@ function createWindow() {
   });
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  // Inject Referer + User-Agent for map tile servers that require them (e.g. OSM).
+  // Without a Referer, OSM and several other volunteer tile CDNs return HTTP 403.
+  session.defaultSession.webRequest.onBeforeSendHeaders(
+    { urls: ['https://*'] },
+    (details, callback) => {
+      const headers = { ...details.requestHeaders };
+      // Only patch tile-like image requests that lack a Referer
+      if (!headers['Referer'] && !headers['referer']) {
+        headers['Referer'] = 'https://opengis.app/';
+      }
+      if (!headers['User-Agent'] || headers['User-Agent'].startsWith('Electron')) {
+        headers['User-Agent'] = 'OpenGIS/0.1.0 (https://opengis.app)';
+      }
+      callback({ requestHeaders: headers });
+    },
+  );
+
+  createWindow();
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
